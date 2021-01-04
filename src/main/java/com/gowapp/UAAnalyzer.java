@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 @RestController
 public class UAAnalyzer {
@@ -25,9 +26,15 @@ public class UAAnalyzer {
         try {
             // 计时开始
             Long start_date  = System.currentTimeMillis();
+            //
+            // 默认优先使用入参解析
+            ua = ua == null?"":ua;
+            String userAgent = ua.equals("") ? request.getHeader("user-agent") : ua;
+            userAgent = userAgent == null?"":userAgent;
             // 开始解析
-            Object object = AnalyzerService(request, ua);
+            Object object = AnalyzerService(request, userAgent);
             map.put("status", 200);
+            map.put("UA", userAgent);
             map.put("value", object);
             // 结束计时
             Long end_date  = System.currentTimeMillis();
@@ -40,14 +47,9 @@ public class UAAnalyzer {
         return map;
     }
     
-    public Object AnalyzerService(HttpServletRequest request, String ua){
-        // 默认优先使用入参解析
-        ua = ua == null?"":ua;
-        String userAgent = ua.equals("") ? request.getHeader("user-agent") : ua;
-        userAgent = userAgent == null?"":userAgent;
+    public Object AnalyzerService(HttpServletRequest request, String userAgent){
         //
-        Map<String, String> valMap = new HashMap<>();
-        valMap.put("UA", userAgent);
+        Map<String, String> valMap = new TreeMap<>();
         //
         UserAgent agent = AnalyzerBuilder().parse(userAgent);
         // 循环遍历获取各项的值
